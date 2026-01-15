@@ -27,7 +27,7 @@ Run a single test file: `pnpm test utils/weekNumber.test.ts`
 - **Next.js 16** with App Router and Turbopack
 - **Clerk** for authentication
 - **next-intl** for i18n (currently Russian only, locale hardcoded in `i18n/request.ts`)
-- **Redis** (Upstash via Vercel Marketplace) for persistence — env var: `KV_REDIS_URL`
+- **@upstash/redis** (Vercel Marketplace) for persistence — uses `Redis.fromEnv()`
 - **AI SDK** with Anthropic provider for meal plan generation
 - **Zod** for schema validation
 - **Tailwind CSS v4**

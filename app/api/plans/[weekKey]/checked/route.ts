@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthUserId } from "@/lib/auth";
-import { getRedis, KV_PREFIX } from "@/lib/redis";
+import { redis, KV_PREFIX } from "@/lib/redis";
 import { z } from "zod";
 
 // Schema for PUT request body
@@ -23,11 +23,10 @@ export async function GET(
   const checkedKey = `${KV_PREFIX}:checked:${userId}:${weekKey}`;
 
   try {
-    const redis = await getRedis();
-    const data = await redis.get(checkedKey);
+    const data = await redis.get<string[]>(checkedKey);
 
-    // Parse JSON string or return empty array
-    const checkedIds = data ? JSON.parse(data) : [];
+    // Upstash auto-deserializes, return empty array if null
+    const checkedIds = data ?? [];
     return NextResponse.json({ checkedIds });
   } catch (error) {
     console.error("Failed to fetch checked items:", error);
@@ -63,8 +62,8 @@ export async function PUT(
       );
     }
 
-    const redis = await getRedis();
-    await redis.set(checkedKey, JSON.stringify(parsed.data.checkedIds));
+    // Upstash auto-serializes JSON
+    await redis.set(checkedKey, parsed.data.checkedIds);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to update checked items:", error);

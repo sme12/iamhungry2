@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthUserId } from "@/lib/auth";
-import { getRedis, KV_PREFIX } from "@/lib/redis";
+import { redis, KV_PREFIX } from "@/lib/redis";
 import { parsePersistedPlan } from "@/schemas/persistedPlan";
 
 // GET /api/plans/[weekKey] — Get a specific plan
@@ -18,16 +18,14 @@ export async function GET(
   const planKey = `${KV_PREFIX}:plan:${userId}:${weekKey}`;
 
   try {
-    const redis = await getRedis();
     const data = await redis.get(planKey);
 
     if (!data) {
       return NextResponse.json({ error: "Plan not found" }, { status: 404 });
     }
 
-    // Redis returns string, parse as JSON
-    const parsed = typeof data === "string" ? JSON.parse(data) : data;
-    const plan = parsePersistedPlan(parsed);
+    // Upstash auto-deserializes JSON
+    const plan = parsePersistedPlan(data);
 
     if (!plan) {
       console.error("Invalid plan data in Redis for key:", planKey);

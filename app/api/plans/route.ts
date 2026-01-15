@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthUserId } from "@/lib/auth";
-import { getRedis, PLAN_INDEX_KEY } from "@/lib/redis";
+import { redis, PLAN_INDEX_KEY } from "@/lib/redis";
 import type { PlanListItem } from "@/schemas/persistedPlan";
 import { getWeekInfoByKey } from "@/utils/weekNumber";
 
@@ -13,11 +13,10 @@ export async function GET() {
   }
 
   try {
-    const redis = await getRedis();
     const userIndexKey = `${PLAN_INDEX_KEY}:${userId}`;
 
     // Get all plan keys from the sorted set (sorted by score descending)
-    const planKeys = await redis.zRange(userIndexKey, 0, -1, { REV: true });
+    const planKeys = await redis.zrange<string[]>(userIndexKey, 0, -1, { rev: true });
 
     if (!planKeys || planKeys.length === 0) {
       return NextResponse.json({ plans: [] });
