@@ -546,7 +546,7 @@ Checks rate limit for user by identifier (IP or user ID).
 - `EmptyState`, `StickyPanel`
 - `usePlans` hook
 
-### 4. Create Page (/new) — Generation Form
+### 4. ✅ Create Page (/new) — Generation Form
 
 - `WeekCalendar`, `MealSlotCell`, `CuisineSelector`, `SpecialConditions`
 - "← Back" button
