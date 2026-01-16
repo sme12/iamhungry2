@@ -12,8 +12,11 @@ export function SpecialConditions({ value, onChange }: SpecialConditionsProps) {
 
   return (
     <section className="space-y-3">
-      <h2 className="text-lg font-semibold">{t("title")}</h2>
+      <h2 id="special-conditions-title" className="text-lg font-semibold">
+        {t("title")}
+      </h2>
       <textarea
+        aria-labelledby="special-conditions-title"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={t("placeholder")}
