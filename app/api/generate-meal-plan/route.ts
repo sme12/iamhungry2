@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
 import { generateText, Output } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
+import { z } from "zod";
 import { getAuthUserId } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { AppStateSchema } from "@/schemas/appState";
-import { MealPlanOnlyResponseSchema } from "@/schemas/mealPlanResponse";
-import { buildMealPlanPrompt } from "@/utils/promptBuilder";
+import {
+  DayPlanSchema,
+  MealPlanOnlyResponseSchema,
+  MealSlotSchema,
+} from "@/schemas/mealPlanResponse";
+import {
+  buildMealPlanPrompt,
+  buildPartialRegenerationPrompt,
+} from "@/utils/promptBuilder";
 
 // Cuisine names for prompt building
 const CUISINE_NAMES: Record<string, string> = {
@@ -24,6 +32,13 @@ const CUISINE_NAMES: Record<string, string> = {
 // Rate limit: 10 requests per minute
 const RATE_LIMIT = 10;
 const RATE_WINDOW_SEC = 60;
+
+// Request body schema
+const RequestBodySchema = z.object({
+  appState: AppStateSchema,
+  currentPlan: z.array(DayPlanSchema).optional(),
+  regenerateSlots: z.array(MealSlotSchema).optional(),
+});
 
 export async function POST(request: Request) {
   try {
@@ -55,7 +70,7 @@ export async function POST(request: Request) {
 
     // Parse request body
     const body = await request.json();
-    const parseResult = AppStateSchema.safeParse(body.appState);
+    const parseResult = RequestBodySchema.safeParse(body);
 
     if (!parseResult.success) {
       return NextResponse.json(
@@ -64,10 +79,20 @@ export async function POST(request: Request) {
       );
     }
 
-    const appState = parseResult.data;
+    const { appState, currentPlan, regenerateSlots } = parseResult.data;
 
-    // Build prompt
-    const prompt = buildMealPlanPrompt(appState, CUISINE_NAMES);
+    // Build prompt - use partial regeneration if slots specified
+    const isPartialRegeneration =
+      currentPlan && regenerateSlots && regenerateSlots.length > 0;
+
+    const prompt = isPartialRegeneration
+      ? buildPartialRegenerationPrompt(
+          appState,
+          currentPlan,
+          regenerateSlots,
+          CUISINE_NAMES
+        )
+      : buildMealPlanPrompt(appState, CUISINE_NAMES);
 
     // Get model from env (defaults to sonnet)
     const modelId =

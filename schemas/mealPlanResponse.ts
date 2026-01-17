@@ -52,6 +52,18 @@ export const ShoppingTripSchema = z.object({
 export type ShoppingTrip = z.infer<typeof ShoppingTripSchema>;
 
 // ============================================
+// Meal slot identifier for selective regeneration
+// ============================================
+export const DaySchema = z.enum(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
+export const MealSchema = z.enum(["breakfast", "lunch", "dinner"]);
+
+export const MealSlotSchema = z.object({
+  day: DaySchema,
+  meal: MealSchema,
+});
+export type MealSlot = z.infer<typeof MealSlotSchema>;
+
+// ============================================
 // Step 1: Meal Plan Only (without shopping list)
 // ============================================
 export const MealPlanOnlyResponseSchema = z.object({

@@ -88,12 +88,14 @@ export function GenerateSection({ appState, isFormValid, getWeekKey }: GenerateS
     stage,
     weekPlan,
     shoppingTrips,
+    selectedSlots,
     error,
     generatePlan,
     confirmPlan,
     regeneratePlan,
     reset,
     resetToPlanStage,
+    toggleSlot,
   } = useMealPlanGeneration();
 
   const handleSave = async () => {
@@ -176,11 +178,25 @@ export function GenerateSection({ appState, isFormValid, getWeekKey }: GenerateS
 
   // Plan ready - show plan with action buttons
   if (stage === "plan-ready" && weekPlan) {
+    const hasSelection = selectedSlots.size > 0;
+
     return (
       <div className="space-y-6">
         <div className="p-4 rounded-lg border border-border">
-          <h3 className="font-medium mb-4">{t("result.mealPlan")}</h3>
-          <MealPlanView weekPlan={weekPlan} />
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-medium">{t("result.mealPlan")}</h3>
+            {hasSelection && (
+              <span className="text-sm text-muted">
+                {t("generation.selectedCount", { count: selectedSlots.size })}
+              </span>
+            )}
+          </div>
+          <MealPlanView
+            weekPlan={weekPlan}
+            selectable
+            selectedSlots={selectedSlots}
+            onToggle={toggleSlot}
+          />
         </div>
 
         <div className="flex gap-3">
@@ -188,7 +204,9 @@ export function GenerateSection({ appState, isFormValid, getWeekKey }: GenerateS
             onClick={() => regeneratePlan(appState)}
             className="flex-1 h-12 rounded-lg bg-card hover:bg-card-hover font-medium transition-colors"
           >
-            {t("common.regenerate")}
+            {hasSelection
+              ? t("generation.regenerateSelected")
+              : t("common.regenerate")}
           </button>
           <button
             onClick={() => confirmPlan(appState)}

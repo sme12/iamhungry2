@@ -7,11 +7,21 @@ import type { Day, Meal } from "@/schemas/appState";
 
 interface MealPlanViewProps {
   weekPlan: DayPlan[];
+  selectable?: boolean;
+  selectedSlots?: Set<string>;
+  onToggle?: (day: Day, meal: Meal) => void;
 }
 
 const MEALS: Meal[] = ["breakfast", "lunch", "dinner"];
 
-function MealCell({ meal }: { meal: MealItem | null }) {
+interface MealCellProps {
+  meal: MealItem | null;
+  selectable?: boolean;
+  isSelected?: boolean;
+  onToggle?: () => void;
+}
+
+function MealCell({ meal, selectable, isSelected, onToggle }: MealCellProps) {
   const t = useTranslations("result");
 
   if (!meal) {
@@ -22,17 +32,40 @@ function MealCell({ meal }: { meal: MealItem | null }) {
     );
   }
 
-  return (
-    <div className="p-2">
+  const content = (
+    <>
       <div className="font-medium text-sm leading-tight">{meal.name}</div>
       <div className="text-xs text-muted mt-1">
         {t("minutes", { time: meal.time })}
       </div>
-    </div>
+    </>
   );
+
+  if (selectable && onToggle) {
+    return (
+      <button
+        type="button"
+        onClick={onToggle}
+        className={`w-full h-full p-2 text-left rounded transition-colors ${
+          isSelected
+            ? "bg-accent/20 ring-2 ring-accent"
+            : "hover:bg-card-hover"
+        }`}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return <div className="p-2">{content}</div>;
 }
 
-export function MealPlanView({ weekPlan }: MealPlanViewProps) {
+export function MealPlanView({
+  weekPlan,
+  selectable,
+  selectedSlots,
+  onToggle,
+}: MealPlanViewProps) {
   const t = useTranslations();
 
   // Create a map for quick lookup by day
@@ -65,14 +98,27 @@ export function MealPlanView({ weekPlan }: MealPlanViewProps) {
                 <td className="p-2 text-sm font-medium">
                   {t(`calendar.days.${day}`)}
                 </td>
-                {MEALS.map((meal) => (
-                  <td
-                    key={meal}
-                    className="p-1 border-l border-border min-h-[64px] align-top"
-                  >
-                    <MealCell meal={dayPlan?.[meal] ?? null} />
-                  </td>
-                ))}
+                {MEALS.map((meal) => {
+                  const slotKey = `${day}-${meal}`;
+                  const isSelected = selectedSlots?.has(slotKey) ?? false;
+                  return (
+                    <td
+                      key={meal}
+                      className="p-1 border-l border-border min-h-[64px] align-top"
+                    >
+                      <MealCell
+                        meal={dayPlan?.[meal] ?? null}
+                        selectable={selectable}
+                        isSelected={isSelected}
+                        onToggle={
+                          selectable && onToggle
+                            ? () => onToggle(day, meal)
+                            : undefined
+                        }
+                      />
+                    </td>
+                  );
+                })}
               </tr>
             );
           })}

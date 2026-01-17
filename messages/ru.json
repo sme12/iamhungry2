@@ -131,6 +131,8 @@
     "generatingPlan": "Генерируем план питания...",
     "generatingShopping": "Составляем список покупок...",
     "rateLimited": "Слишком много запросов",
-    "saveSuccess": "План сохранён"
+    "saveSuccess": "План сохранён",
+    "selectedCount": "Выбрано: {count}",
+    "regenerateSelected": "Перегенерировать выбранное"
   }
 }
