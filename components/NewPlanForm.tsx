@@ -4,6 +4,7 @@ import { useSchedule } from "@/hooks/useSchedule";
 import { WeekCalendar } from "./WeekCalendar";
 import { CuisineSelector } from "./CuisineSelector";
 import { SpecialConditions } from "./SpecialConditions";
+import { WeekSelector } from "./WeekSelector";
 import { GenerateSection } from "./GenerateSection";
 
 export function NewPlanForm() {
@@ -11,10 +12,17 @@ export function NewPlanForm() {
     schedules,
     selectedCuisines,
     specialConditions,
+    weekOption,
+    customWeekNumber,
+    currentWeekNumber,
+    nextWeekNumber,
     toggleSlot,
     toggleCuisine,
     setSpecialConditions,
+    setWeekOption,
+    setCustomWeekNumber,
     getAppState,
+    getSelectedWeekKey,
     isValid,
   } = useSchedule();
 
@@ -26,7 +34,19 @@ export function NewPlanForm() {
         value={specialConditions}
         onChange={setSpecialConditions}
       />
-      <GenerateSection appState={getAppState()} isFormValid={isValid} />
+      <WeekSelector
+        selectedOption={weekOption}
+        customWeekNumber={customWeekNumber}
+        currentWeekNumber={currentWeekNumber}
+        nextWeekNumber={nextWeekNumber}
+        onOptionChange={setWeekOption}
+        onCustomChange={setCustomWeekNumber}
+      />
+      <GenerateSection
+        appState={getAppState()}
+        isFormValid={isValid}
+        getWeekKey={getSelectedWeekKey}
+      />
     </div>
   );
 }

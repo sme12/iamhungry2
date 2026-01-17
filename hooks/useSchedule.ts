@@ -16,6 +16,13 @@ import {
   STATUS_CYCLE,
 } from "@/config/defaults";
 import type { PersonId } from "@/config/defaults";
+import type { WeekOption } from "@/components/WeekSelector";
+import {
+  getCurrentWeekInfo,
+  getNextWeekKey,
+  getPlanKey,
+  getWeekInfoByKey,
+} from "@/utils/weekNumber";
 
 interface UseScheduleReturn {
   schedules: {
@@ -24,12 +31,19 @@ interface UseScheduleReturn {
   };
   selectedCuisines: CuisineId[];
   specialConditions: string;
+  weekOption: WeekOption;
+  customWeekNumber: number | null;
+  currentWeekNumber: number;
+  nextWeekNumber: number;
 
   toggleSlot: (person: PersonId, day: Day, meal: Meal) => void;
   toggleCuisine: (cuisineId: CuisineId) => void;
   setSpecialConditions: (value: string) => void;
+  setWeekOption: (option: WeekOption) => void;
+  setCustomWeekNumber: (num: number | null) => void;
 
   getAppState: () => AppState;
+  getSelectedWeekKey: () => string;
   isValid: boolean;
 }
 
@@ -47,6 +61,14 @@ export function useSchedule(): UseScheduleReturn {
   );
 
   const [specialConditions, setSpecialConditions] = useState("");
+
+  const [weekOption, setWeekOption] = useState<WeekOption>("current");
+  const [customWeekNumber, setCustomWeekNumber] = useState<number | null>(null);
+
+  const currentWeekInfo = getCurrentWeekInfo();
+  const currentWeekNumber = currentWeekInfo.weekNumber;
+  const nextWeekKey = getNextWeekKey(currentWeekInfo.weekKey);
+  const nextWeekNumber = getWeekInfoByKey(nextWeekKey).weekNumber;
 
   const toggleSlot = useCallback(
     (person: PersonId, day: Day, meal: Meal) => {
@@ -89,17 +111,33 @@ export function useSchedule(): UseScheduleReturn {
     };
   }, [schedules, selectedCuisines, specialConditions]);
 
-  // Valid if at least one cuisine is selected
-  const isValid = selectedCuisines.length > 0;
+  const getSelectedWeekKey = useCallback((): string => {
+    if (weekOption === "current") return currentWeekInfo.weekKey;
+    if (weekOption === "next") return nextWeekKey;
+    // custom: build key from year + customWeekNumber
+    return getPlanKey(currentWeekInfo.year, customWeekNumber!);
+  }, [weekOption, customWeekNumber, currentWeekInfo.weekKey, currentWeekInfo.year, nextWeekKey]);
+
+  // Valid if at least one cuisine is selected and week is valid
+  const isValid =
+    selectedCuisines.length > 0 &&
+    (weekOption !== "custom" || customWeekNumber !== null);
 
   return {
     schedules,
     selectedCuisines,
     specialConditions,
+    weekOption,
+    customWeekNumber,
+    currentWeekNumber,
+    nextWeekNumber,
     toggleSlot,
     toggleCuisine,
     setSpecialConditions,
+    setWeekOption,
+    setCustomWeekNumber,
     getAppState,
+    getSelectedWeekKey,
     isValid,
   };
 }

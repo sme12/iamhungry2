@@ -54,6 +54,14 @@
     "title": "Особые условия",
     "placeholder": "Не использовать блюда: ...\nВ холодильнике есть: ...\nХочется: ..."
   },
+  "weekSelector": {
+    "title": "Номер недели",
+    "current": "Текущая ({number})",
+    "next": "Следующая ({number})",
+    "custom": "Указать",
+    "placeholder": "Номер недели (1-53)",
+    "inputLabel": "Номер недели"
+  },
   "result": {
     "mealPlan": "План питания",
     "shoppingList": "Список покупок",

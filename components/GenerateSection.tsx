@@ -8,13 +8,13 @@ import { useMealPlanGeneration } from "@/hooks/useMealPlanGeneration";
 import { MealPlanView } from "./MealPlanView";
 import { MealPlanSkeleton, ShoppingListSkeleton } from "./Skeleton";
 import { addIdsToShoppingItems } from "@/utils/shoppingItemId";
-import { getCurrentWeekInfo } from "@/utils/weekNumber";
 import { CATEGORY_EMOJI } from "@/config/defaults";
 import type { Category, ShoppingTrip } from "@/schemas/mealPlanResponse";
 
 interface GenerateSectionProps {
   appState: AppState;
   isFormValid: boolean;
+  getWeekKey: () => string;
 }
 
 // Category display order
@@ -78,7 +78,7 @@ function ShoppingListPreview({ trips }: { trips: ShoppingTrip[] }) {
   );
 }
 
-export function GenerateSection({ appState, isFormValid }: GenerateSectionProps) {
+export function GenerateSection({ appState, isFormValid, getWeekKey }: GenerateSectionProps) {
   const t = useTranslations();
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
@@ -103,14 +103,14 @@ export function GenerateSection({ appState, isFormValid }: GenerateSectionProps)
     setSaveError(null);
 
     try {
-      const weekInfo = getCurrentWeekInfo();
+      const weekKey = getWeekKey();
       const tripsWithIds = addIdsToShoppingItems(shoppingTrips);
 
       const res = await fetch("/api/plans", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          weekKey: weekInfo.weekKey,
+          weekKey,
           inputState: appState,
           result: {
             weekPlan,
