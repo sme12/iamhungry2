@@ -43,19 +43,23 @@ function CategorySection({
   const emoji = CATEGORY_EMOJI[category];
 
   return (
-    <div className="mb-4">
+    <div className="mb-2">
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="w-full flex items-center justify-between py-2 px-1 text-left"
+        aria-expanded={!collapsed}
+        aria-label={t(category)}
+        className="w-full flex items-center justify-between py-1.5 px-1 text-left rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
         <div className="flex items-center gap-2">
           <span>{emoji}</span>
-          <span className="font-medium">{t(category)}</span>
-          <span className="text-sm text-muted">
+          <span className="font-medium text-sm">{t(category)}</span>
+          <span className="text-xs text-muted tabular-nums">
             ({checkedCount}/{items.length})
           </span>
         </div>
-        <span className="text-muted">{collapsed ? "▼" : "▲"}</span>
+        <span className="text-muted text-sm" aria-hidden="true">
+          {collapsed ? "▼" : "▲"}
+        </span>
       </button>
 
       {!collapsed && (
@@ -66,24 +70,106 @@ function CategorySection({
               <button
                 key={item.id}
                 onClick={() => onToggle(item.id)}
-                className={`w-full flex items-center gap-3 h-14 px-3 rounded-lg transition-colors active:scale-[0.98] ${
+                role="checkbox"
+                aria-checked={isChecked}
+                className={`w-full flex items-center gap-3 h-12 px-3 rounded-lg transition-colors active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
                   isChecked
                     ? "bg-card/50 text-muted line-through"
                     : "bg-card hover:bg-card-hover"
                 }`}
               >
                 <div
-                  className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-colors ${
+                  aria-hidden="true"
+                  className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
                     isChecked
                       ? "bg-success border-success text-white"
                       : "border-border"
                   }`}
                 >
-                  {isChecked && <span className="text-sm">✓</span>}
+                  {isChecked && <span className="text-xs">✓</span>}
                 </div>
-                <span className="flex-1 text-left">{item.name}</span>
-                <span className="text-sm text-muted">{item.amount}</span>
+                <span className="flex-1 text-left text-sm min-w-0 truncate">
+                  {item.name}
+                </span>
+                <span className="text-xs text-muted shrink-0">{item.amount}</span>
               </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface TripSectionProps {
+  trip: ShoppingTripWithIds;
+  checkedIds: Set<string>;
+  onToggle: (id: string) => void;
+  showOnlyUnchecked: boolean;
+}
+
+function TripSection({
+  trip,
+  checkedIds,
+  onToggle,
+  showOnlyUnchecked,
+}: TripSectionProps) {
+  const [collapsed, setCollapsed] = useState(false);
+
+  // Group items by category within this trip
+  const itemsByCategory = useMemo(() => {
+    const grouped = new Map<Category, ShoppingItemWithId[]>();
+    for (const item of trip.items) {
+      if (showOnlyUnchecked && checkedIds.has(item.id)) continue;
+      const existing = grouped.get(item.category) || [];
+      existing.push(item);
+      grouped.set(item.category, existing);
+    }
+    return grouped;
+  }, [trip.items, checkedIds, showOnlyUnchecked]);
+
+  const totalItems = trip.items.length;
+  const checkedCount = trip.items.filter((item) =>
+    checkedIds.has(item.id)
+  ).length;
+
+  // Hide trip if filtering and all items checked
+  if (showOnlyUnchecked && itemsByCategory.size === 0) {
+    return null;
+  }
+
+  return (
+    <div className="mb-6">
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        aria-expanded={!collapsed}
+        aria-label={trip.label}
+        className="w-full flex items-center justify-between py-2 px-2 bg-card rounded-lg mb-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      >
+        <span className="font-semibold">{trip.label}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted tabular-nums">
+            {checkedCount}/{totalItems}
+          </span>
+          <span className="text-muted" aria-hidden="true">
+            {collapsed ? "▼" : "▲"}
+          </span>
+        </div>
+      </button>
+
+      {!collapsed && (
+        <div className="pl-2">
+          {CATEGORY_ORDER.map((category) => {
+            const items = itemsByCategory.get(category);
+            if (!items || items.length === 0) return null;
+            return (
+              <CategorySection
+                key={category}
+                category={category}
+                items={items}
+                checkedIds={checkedIds}
+                onToggle={onToggle}
+              />
             );
           })}
         </div>
@@ -100,23 +186,6 @@ export function ShoppingListView({
   const t = useTranslations("shoppingList");
   const [showOnlyUnchecked, setShowOnlyUnchecked] = useState(false);
 
-  // Group items by category across all trips
-  const itemsByCategory = useMemo(() => {
-    const grouped = new Map<Category, ShoppingItemWithId[]>();
-
-    for (const trip of trips) {
-      for (const item of trip.items) {
-        if (showOnlyUnchecked && checkedIds.has(item.id)) continue;
-
-        const existing = grouped.get(item.category) || [];
-        existing.push(item);
-        grouped.set(item.category, existing);
-      }
-    }
-
-    return grouped;
-  }, [trips, checkedIds, showOnlyUnchecked]);
-
   // Calculate totals
   const totalItems = trips.reduce((sum, trip) => sum + trip.items.length, 0);
   const totalChecked = trips.reduce(
@@ -124,6 +193,9 @@ export function ShoppingListView({
       sum + trip.items.filter((item) => checkedIds.has(item.id)).length,
     0
   );
+
+  // Check if all items are checked (for empty state)
+  const allChecked = totalChecked === totalItems && totalItems > 0;
 
   return (
     <div className="space-y-4">
@@ -134,7 +206,8 @@ export function ShoppingListView({
         </div>
         <button
           onClick={() => setShowOnlyUnchecked(!showOnlyUnchecked)}
-          className={`text-sm px-3 py-1.5 rounded-lg transition-colors ${
+          aria-pressed={showOnlyUnchecked}
+          className={`text-sm px-3 py-1.5 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
             showOnlyUnchecked
               ? "bg-accent text-white"
               : "bg-card hover:bg-card-hover"
@@ -144,24 +217,19 @@ export function ShoppingListView({
         </button>
       </div>
 
-      {/* Categories */}
-      {CATEGORY_ORDER.map((category) => {
-        const items = itemsByCategory.get(category);
-        if (!items || items.length === 0) return null;
-
-        return (
-          <CategorySection
-            key={category}
-            category={category}
-            items={items}
-            checkedIds={checkedIds}
-            onToggle={onToggle}
-          />
-        );
-      })}
+      {/* Trips */}
+      {trips.map((trip, index) => (
+        <TripSection
+          key={index}
+          trip={trip}
+          checkedIds={checkedIds}
+          onToggle={onToggle}
+          showOnlyUnchecked={showOnlyUnchecked}
+        />
+      ))}
 
       {/* Empty state when filtering */}
-      {showOnlyUnchecked && itemsByCategory.size === 0 && (
+      {showOnlyUnchecked && allChecked && (
         <div className="text-center py-8 text-muted">
           ✅ All items purchased!
         </div>
