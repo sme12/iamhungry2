@@ -20,7 +20,7 @@ export async function GET(
   }
 
   const { weekKey } = await params;
-  const checkedKey = `${KV_PREFIX}:checked:${userId}:${weekKey}`;
+  const checkedKey = `${KV_PREFIX}:checked:${weekKey}`;
 
   try {
     const data = await redis.get<string[]>(checkedKey);
@@ -49,7 +49,7 @@ export async function PUT(
   }
 
   const { weekKey } = await params;
-  const checkedKey = `${KV_PREFIX}:checked:${userId}:${weekKey}`;
+  const checkedKey = `${KV_PREFIX}:checked:${weekKey}`;
 
   try {
     const body = await request.json();

@@ -16,10 +16,8 @@ export async function GET() {
   }
 
   try {
-    const userIndexKey = `${PLAN_INDEX_KEY}:${userId}`;
-
     // Get all plan keys from the sorted set (sorted by score descending)
-    const planKeys = await redis.zrange<string[]>(userIndexKey, 0, -1, { rev: true });
+    const planKeys = await redis.zrange<string[]>(PLAN_INDEX_KEY, 0, -1, { rev: true });
 
     if (!planKeys || planKeys.length === 0) {
       return NextResponse.json({ plans: [] });
@@ -84,13 +82,12 @@ export async function POST(request: Request) {
       result,
     };
 
-    // Save plan to Redis
-    const planKey = `${KV_PREFIX}:plan:${userId}:${weekKey}`;
+    // Save plan to Redis (shared across all users)
+    const planKey = `${KV_PREFIX}:plan:${weekKey}`;
     await redis.set(planKey, plan);
 
-    // Add to user's plan index (sorted set with timestamp as score)
-    const userIndexKey = `${PLAN_INDEX_KEY}:${userId}`;
-    await redis.zadd(userIndexKey, { score: Date.now(), member: weekKey });
+    // Add to shared plan index (sorted set with timestamp as score)
+    await redis.zadd(PLAN_INDEX_KEY, { score: Date.now(), member: weekKey });
 
     return NextResponse.json({ weekKey, success: true });
   } catch (error) {

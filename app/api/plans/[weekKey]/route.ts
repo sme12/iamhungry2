@@ -15,7 +15,7 @@ export async function GET(
   }
 
   const { weekKey } = await params;
-  const planKey = `${KV_PREFIX}:plan:${userId}:${weekKey}`;
+  const planKey = `${KV_PREFIX}:plan:${weekKey}`;
 
   try {
     const data = await redis.get(planKey);
@@ -54,15 +54,14 @@ export async function DELETE(
   }
 
   const { weekKey } = await params;
-  const planKey = `${KV_PREFIX}:plan:${userId}:${weekKey}`;
-  const checkedKey = `${KV_PREFIX}:checked:${userId}:${weekKey}`;
-  const userIndexKey = `${PLAN_INDEX_KEY}:${userId}`;
+  const planKey = `${KV_PREFIX}:plan:${weekKey}`;
+  const checkedKey = `${KV_PREFIX}:checked:${weekKey}`;
 
   try {
     // Delete plan data and checked items
     await redis.del(planKey, checkedKey);
-    // Remove from user's plan index
-    await redis.zrem(userIndexKey, weekKey);
+    // Remove from shared plan index
+    await redis.zrem(PLAN_INDEX_KEY, weekKey);
 
     return NextResponse.json({ success: true });
   } catch (error) {

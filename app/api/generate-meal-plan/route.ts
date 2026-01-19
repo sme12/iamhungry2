@@ -89,7 +89,7 @@ export async function POST(request: Request) {
     let previousMeals: string[] | undefined;
     if (weekKey) {
       const prevWeekKey = getPreviousWeekKey(weekKey);
-      const planKey = `${KV_PREFIX}:plan:${userId}:${prevWeekKey}`;
+      const planKey = `${KV_PREFIX}:plan:${prevWeekKey}`;
       const data = await redis.get(planKey);
       if (data) {
         const prevPlan = parsePersistedPlan(data);
