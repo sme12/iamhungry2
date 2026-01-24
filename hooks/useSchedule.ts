@@ -36,6 +36,20 @@ interface UseScheduleReturn {
   hasHydrated: boolean;
 }
 
+/**
+ * Provides schedule state, derived week information, and action handlers used by the scheduling UI.
+ *
+ * @returns An object containing:
+ * - `schedules`: current week schedules for each person,
+ * - `selectedCuisines`: array of chosen cuisine IDs,
+ * - `specialConditions`: free-form special conditions text,
+ * - `weekOption` and `customWeekNumber`: selected week mode and custom week number (if any),
+ * - `currentWeekNumber` and `nextWeekNumber`: computed week numbers for the selected/current context,
+ * - action handlers: `toggleSlot`, `toggleCuisine`, `setSpecialConditions`, `setWeekOption`, `setCustomWeekNumber`,
+ * - helpers: `getAppState` (returns the combined app state) and `getSelectedWeekKey` (resolves the active plan key),
+ * - `isValid`: whether the current selection is valid, and
+ * - `hasHydrated`: whether the store has completed hydration.
+ */
 export function useSchedule(): UseScheduleReturn {
   const schedules = useScheduleStore((state) => state.schedules);
   const selectedCuisines = useScheduleStore((state) => state.selectedCuisines);
