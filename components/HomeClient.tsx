@@ -75,6 +75,7 @@ export function HomeClient({ initialWeeks }: HomeClientProps) {
               trips={plan.result.shoppingTrips}
               checkedIds={checkedIds}
               onToggle={toggleChecked}
+              weekKey={weekInfo!.weekKey}
             />
           )
         ) : (

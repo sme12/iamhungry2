@@ -1,15 +1,17 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import type { ShoppingItemWithId, Category } from "@/schemas/mealPlanResponse";
 import type { ShoppingTripWithIds } from "@/utils/shoppingItemId";
 import { CATEGORY_EMOJI } from "@/config/defaults";
+import { useShoppingListUIStore } from "@/stores/useShoppingListUIStore";
 
 interface ShoppingListViewProps {
   trips: ShoppingTripWithIds[];
   checkedIds: Set<string>;
   onToggle: (id: string) => void;
+  weekKey: string;
 }
 
 // Category display order
@@ -28,6 +30,8 @@ interface CategorySectionProps {
   items: ShoppingItemWithId[];
   checkedIds: Set<string>;
   onToggle: (id: string) => void;
+  tripIndex: number;
+  weekKey: string;
 }
 
 function CategorySection({
@@ -35,9 +39,17 @@ function CategorySection({
   items,
   checkedIds,
   onToggle,
+  tripIndex,
+  weekKey,
 }: CategorySectionProps) {
   const t = useTranslations("categories");
-  const [collapsed, setCollapsed] = useState(false);
+
+  const compoundKey = `${tripIndex}-${category}`;
+  const weekState = useShoppingListUIStore((s) => s.weekStates[weekKey]);
+  const collapsed = weekState?.collapsedCategories.includes(compoundKey) ?? false;
+  const toggleCategoryCollapsed = useShoppingListUIStore(
+    (s) => s.toggleCategoryCollapsed
+  );
 
   const checkedCount = items.filter((item) => checkedIds.has(item.id)).length;
   const emoji = CATEGORY_EMOJI[category];
@@ -45,7 +57,7 @@ function CategorySection({
   return (
     <div className="mb-2">
       <button
-        onClick={() => setCollapsed(!collapsed)}
+        onClick={() => toggleCategoryCollapsed(weekKey, tripIndex, category)}
         aria-expanded={!collapsed}
         aria-label={t(category)}
         className="w-full flex items-center justify-between py-1.5 px-1 text-left rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
@@ -103,6 +115,8 @@ function CategorySection({
 
 interface TripSectionProps {
   trip: ShoppingTripWithIds;
+  tripIndex: number;
+  weekKey: string;
   checkedIds: Set<string>;
   onToggle: (id: string) => void;
   showOnlyUnchecked: boolean;
@@ -110,11 +124,17 @@ interface TripSectionProps {
 
 function TripSection({
   trip,
+  tripIndex,
+  weekKey,
   checkedIds,
   onToggle,
   showOnlyUnchecked,
 }: TripSectionProps) {
-  const [collapsed, setCollapsed] = useState(false);
+  const weekState = useShoppingListUIStore((s) => s.weekStates[weekKey]);
+  const collapsed = weekState?.collapsedTrips.includes(tripIndex) ?? false;
+  const toggleTripCollapsed = useShoppingListUIStore(
+    (s) => s.toggleTripCollapsed
+  );
 
   // Group items by category within this trip
   const itemsByCategory = useMemo(() => {
@@ -141,7 +161,7 @@ function TripSection({
   return (
     <div className="mb-6">
       <button
-        onClick={() => setCollapsed(!collapsed)}
+        onClick={() => toggleTripCollapsed(weekKey, tripIndex)}
         aria-expanded={!collapsed}
         aria-label={trip.label}
         className="w-full flex items-center justify-between py-2 px-2 bg-card rounded-lg mb-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
@@ -169,6 +189,8 @@ function TripSection({
                 items={items}
                 checkedIds={checkedIds}
                 onToggle={onToggle}
+                tripIndex={tripIndex}
+                weekKey={weekKey}
               />
             );
           })}
@@ -182,9 +204,15 @@ export function ShoppingListView({
   trips,
   checkedIds,
   onToggle,
+  weekKey,
 }: ShoppingListViewProps) {
   const t = useTranslations("shoppingList");
-  const [showOnlyUnchecked, setShowOnlyUnchecked] = useState(false);
+
+  const weekState = useShoppingListUIStore((s) => s.weekStates[weekKey]);
+  const showOnlyUnchecked = weekState?.showOnlyUnchecked ?? false;
+  const toggleShowOnlyUnchecked = useShoppingListUIStore(
+    (s) => s.toggleShowOnlyUnchecked
+  );
 
   // Calculate totals
   const totalItems = trips.reduce((sum, trip) => sum + trip.items.length, 0);
@@ -205,7 +233,7 @@ export function ShoppingListView({
           {totalChecked}/{totalItems}
         </div>
         <button
-          onClick={() => setShowOnlyUnchecked(!showOnlyUnchecked)}
+          onClick={() => toggleShowOnlyUnchecked(weekKey)}
           aria-pressed={showOnlyUnchecked}
           className={`text-sm px-3 py-1.5 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
             showOnlyUnchecked
@@ -222,6 +250,8 @@ export function ShoppingListView({
         <TripSection
           key={index}
           trip={trip}
+          tripIndex={index}
+          weekKey={weekKey}
           checkedIds={checkedIds}
           onToggle={onToggle}
           showOnlyUnchecked={showOnlyUnchecked}
