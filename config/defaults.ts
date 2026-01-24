@@ -1,4 +1,9 @@
-import type { CuisineId, Day, DaySchedule, MealSlotStatus } from "@/schemas/appState";
+import type {
+  CuisineId,
+  Day,
+  DaySchedule,
+  MealSlotStatus,
+} from "@/schemas/appState";
 
 // Participants (hardcoded)
 export const PEOPLE = ["vitalik", "lena"] as const;
@@ -64,18 +69,26 @@ export const DISH_RULES = {
 };
 
 // Days of the week in order
-export const DAYS_ORDER: Day[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+export const DAYS_ORDER: Day[] = [
+  "mon",
+  "tue",
+  "wed",
+  "thu",
+  "fri",
+  "sat",
+  "sun",
+];
 
 // Default daily schedule
 export const DEFAULT_DAY_SCHEDULE: DaySchedule = {
-  breakfast: "full",
+  breakfast: "coffee",
   lunch: "skip",
   dinner: "full",
 };
 
 // Default weekday schedule (lunch — skip)
 export const DEFAULT_WEEKDAY_SCHEDULE: DaySchedule = {
-  breakfast: "full",
+  breakfast: "coffee",
   lunch: "skip",
   dinner: "full",
 };
