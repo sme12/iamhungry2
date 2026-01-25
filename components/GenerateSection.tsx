@@ -6,6 +6,7 @@ import type { AppState } from "@/schemas/appState";
 import { useMealPlanGeneration } from "@/hooks/useMealPlanGeneration";
 import { MealPlanView } from "./MealPlanView";
 import { MealPlanSkeleton } from "./Skeleton";
+import { CookingLoader } from "./CookingLoader";
 import { addIdsToShoppingItems } from "@/utils/shoppingItemId";
 
 interface GenerateSectionProps {
@@ -142,11 +143,14 @@ export function GenerateSection({ appState, isFormValid, getWeekKey }: GenerateS
     );
   }
 
-  // Generating shopping list and saving - show centered loading
+  // Generating shopping list and saving - show animated loader
   if (stage === "generating-shopping") {
     return (
-      <div className="py-12 text-center">
-        <p className="text-muted">{t("generation.savingPlan")}</p>
+      <div className="py-8">
+        <CookingLoader />
+        <p className="text-center text-muted mt-4">
+          {t("generation.savingPlan")}
+        </p>
       </div>
     );
   }
