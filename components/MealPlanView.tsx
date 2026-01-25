@@ -1,9 +1,11 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import type { DayPlan, MealItem } from "@/schemas/mealPlanResponse";
 import { DAYS_ORDER } from "@/config/defaults";
 import type { Day, Meal } from "@/schemas/appState";
+import { copyToClipboard } from "@/utils/clipboard";
 
 interface MealPlanViewProps {
   weekPlan: DayPlan[];
@@ -32,6 +34,16 @@ function MealCell({ meal, selectable, isSelected, onToggle }: MealCellProps) {
     );
   }
 
+  const handleCopyPrompt = async () => {
+    const prompt = t("recipePrompt", { mealName: meal.name });
+    const success = await copyToClipboard(prompt);
+    if (success) {
+      toast.success(t("copiedPrompt", { mealName: meal.name }));
+    } else {
+      toast.error(t("copyFailed"));
+    }
+  };
+
   const content = (
     <>
       <div className="font-medium text-sm leading-tight">{meal.name}</div>
@@ -41,6 +53,7 @@ function MealCell({ meal, selectable, isSelected, onToggle }: MealCellProps) {
     </>
   );
 
+  // Selectable mode - selection behavior
   if (selectable && onToggle) {
     return (
       <button
@@ -57,7 +70,16 @@ function MealCell({ meal, selectable, isSelected, onToggle }: MealCellProps) {
     );
   }
 
-  return <div className="p-2">{content}</div>;
+  // Non-selectable mode - copy prompt behavior
+  return (
+    <button
+      type="button"
+      onClick={handleCopyPrompt}
+      className="w-full h-full p-2 text-left rounded transition-colors hover:bg-card-hover active:scale-[0.98] cursor-pointer"
+    >
+      {content}
+    </button>
+  );
 }
 
 export function MealPlanView({

@@ -9,6 +9,7 @@ import {
   SignUpButton,
   UserButton,
 } from "@clerk/nextjs";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -45,6 +46,7 @@ export default async function RootLayout({
           </header>
           <NextIntlClientProvider messages={messages}>
             {children}
+            <Toaster position="bottom-center" />
           </NextIntlClientProvider>
         </body>
       </html>
