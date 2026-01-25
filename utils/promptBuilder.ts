@@ -4,7 +4,6 @@ import {
   BANNED_INGREDIENTS,
   COOKING_TIME,
   DAYS_ORDER,
-  DISH_RULES,
   EXCLUDED_CUISINES,
   MEAT_RULES,
   PEOPLE,
@@ -31,6 +30,7 @@ const MEAL_NAMES: Record<Meal, string> = {
 // Slot status descriptions
 const STATUS_DESCRIPTIONS: Record<MealSlotStatus, string> = {
   full: "готовим",
+  soup: "суп",
   coffee: "легкий",
   skip: "пропуск",
 };
@@ -61,7 +61,7 @@ function getMealSlotInfo(state: AppState, day: Day, meal: Meal): MealSlotInfo {
 
   for (const person of PEOPLE) {
     const status = state.schedules[person][day][meal];
-    if (status === "full" || status === "coffee") {
+    if (status === "full" || status === "soup" || status === "coffee") {
       portions++;
       eatingPeople.push(PERSON_NAMES[person]);
     }
@@ -75,6 +75,8 @@ function getMealSlotInfo(state: AppState, day: Day, meal: Meal): MealSlotInfo {
     description = STATUS_DESCRIPTIONS[vitalikStatus];
     if (vitalikStatus === "coffee") {
       description = "легкий (оба)";
+    } else if (vitalikStatus === "soup") {
+      description = "суп (оба)";
     }
   } else {
     const parts: string[] = [];
@@ -105,7 +107,6 @@ function buildRestrictionsSection(): string {
 - Свинина: ${MEAT_RULES.pork}
 - Говядина: ${MEAT_RULES.beef}
 - Рыба: ${MEAT_RULES.fish}
-- Супы: ${DISH_RULES.soup}
 - Запрещённые: ${BANNED_INGREDIENTS.join(", ")}`;
 }
 
@@ -330,7 +331,10 @@ ${currentPlanLines.join("\n")}`);
 
   // SLOTS TO REGENERATE
   const slotsDescription = slotsToRegenerate
-    .map((s) => `${DAY_NAMES[s.day]} — ${MEAL_NAMES[s.meal]}`)
+    .map((s) => {
+      const info = getMealSlotInfo(state, s.day, s.meal);
+      return `${DAY_NAMES[s.day]} — ${MEAL_NAMES[s.meal]}: ${info.portions} порц. (${info.description})`;
+    })
     .join("\n");
   sections.push(`СЛОТЫ ДЛЯ ЗАМЕНЫ
 ${slotsDescription}`);

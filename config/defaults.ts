@@ -63,11 +63,6 @@ export const MEAT_RULES = {
   fish: "salmon/trout/tuna only, maximum once per week",
 };
 
-// Dish type rules
-export const DISH_RULES = {
-  soup: "maximum once per week",
-};
-
 // Days of the week in order
 export const DAYS_ORDER: Day[] = [
   "mon",
@@ -114,11 +109,12 @@ export function createDefaultWeekSchedule(): Record<Day, DaySchedule> {
 }
 
 // Status cycle on click
-export const STATUS_CYCLE: MealSlotStatus[] = ["full", "coffee", "skip"];
+export const STATUS_CYCLE: MealSlotStatus[] = ["full", "soup", "coffee", "skip"];
 
 // Status emojis
 export const STATUS_EMOJI: Record<MealSlotStatus, string> = {
   full: "🍽️",
+  soup: "🍲",
   coffee: "☕",
   skip: "❌",
 };

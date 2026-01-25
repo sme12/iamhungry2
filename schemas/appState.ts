@@ -3,6 +3,7 @@ import { z } from "zod";
 // Calendar cell statuses
 export const MealSlotStatusSchema = z.enum([
   "full", // 🍽️ Full meal (cooking at home)
+  "soup", // 🍲 Soup day
   "coffee", // ☕ Light snack (coffee/croissant)
   "skip", // ❌ Skip
 ]);
