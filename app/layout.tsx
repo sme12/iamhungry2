@@ -13,7 +13,7 @@ import { Toaster } from "sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "iamhungry",
+  title: "alfred.food",
   description: "Family meal planner",
 };
 

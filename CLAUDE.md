@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-iamhungry is a family meal planner app built with Next.js 16. It uses AI (Claude via Vercel AI SDK) to generate weekly meal plans with shopping lists based on family schedules and cuisine preferences.
+alfred.food is a family meal planner app built with Next.js 16. It uses AI (Claude via Vercel AI SDK) to generate weekly meal plans with shopping lists based on family schedules and cuisine preferences.
 
 ## Commands
 

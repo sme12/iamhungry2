@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "iamhungry",
+    "appName": "alfred.food",
     "generate": "Сгенерировать план",
     "save": "Сохранить",
     "regenerate": "Перегенерировать",
